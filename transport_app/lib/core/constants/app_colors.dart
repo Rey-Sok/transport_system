@@ -6,7 +6,7 @@ class AppColors {
   static const Color secondaryColor = Color(0xFFE8803F);
 
   // Surfaces
-  static const Color backgroundColor = Color(0xFF1B2A41); // dark navy app background
+  static const Color backgroundColor = Color(0xFF0E1E34);// dark navy app background
   static const Color surfaceColor = Color(0xFFFFFFFF);    // white cards
   static const Color iconBackground = Color(0xFFF3F5F8);  // light circle behind icons
 
@@ -23,4 +23,8 @@ class AppColors {
   // Status
   static const Color errorColor = Color(0xFFB00020);
   static const Color successColor = Color(0xFF2E7D32);
+
+
+  static const Color cardLen = Color(0xFF2B3647);
+  static const Color borderCard = Color(0xFF4A5568);
 }

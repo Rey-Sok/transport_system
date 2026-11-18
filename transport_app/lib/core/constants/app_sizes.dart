@@ -6,6 +6,9 @@ class AppSizes {
   static const double lg = 24;
   static const double xl = 32;
 
+  static const double peddingY = 18;
+  static const double peddingX = 16;
+
   // Border Radius
   static const double radiusSmall = 8;
   static const double radiusMedium = 12;

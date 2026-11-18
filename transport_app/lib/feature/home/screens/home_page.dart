@@ -21,12 +21,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            AppPadding.md,
-            AppPadding.sm,
-            AppPadding.md,
-            AppPadding.sm,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: AppSizes.peddingY, vertical: AppSizes.peddingX),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
