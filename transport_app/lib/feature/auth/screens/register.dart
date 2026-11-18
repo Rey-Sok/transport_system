@@ -44,8 +44,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // ---------- Open the calendar and pick a date ----------
   Future<void> _pickBirthDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
+    final DateTime? picked = await _showCalendar(
       initialDate: DateTime(2000, 5, 15),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
@@ -53,10 +52,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // picked is null if the user closes the calendar
     if (picked != null) {
-      final month = picked.month.toString().padLeft(2, '0');
-      final day = picked.day.toString().padLeft(2, '0');
       setState(() {
-        _birthDateController.text = '$month/$day/${picked.year}';
+        _birthDateController.text = _formatDate(picked);
       });
     }
   }
@@ -121,6 +118,113 @@ class _RegisterPageState extends State<RegisterPage> {
       text,
       style: const TextStyle(color: Colors.white, fontSize: 16),
     );
+  }
+
+  Future<DateTime?> _showCalendar({
+    required DateTime initialDate,
+    required DateTime firstDate,
+    DateTime? lastDate,
+  }) {
+    final today = DateUtils.dateOnly(DateTime.now());
+    return showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate.isAfter(DateTime(1800)) ? firstDate : DateTime(1800),
+      lastDate: lastDate ?? DateUtils.addMonthsToMonthDate(today, 24),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        return Center(
+          child: Transform.scale(
+            scale: 0.9,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: Theme(
+                data: theme.copyWith(
+                  colorScheme: const ColorScheme.light(
+                    primary: AppColors.primaryColor,
+                    onPrimary: AppColors.textOnPrimary,
+                    surface: AppColors.surfaceColor,
+                    onSurface: AppColors.textColor,
+                  ),
+                  datePickerTheme: DatePickerThemeData(
+                    backgroundColor: AppColors.surfaceColor,
+                    headerBackgroundColor: AppColors.primaryColor,
+                    headerForegroundColor: AppColors.textOnPrimary,
+                    headerHelpStyle: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: AppSizes.fontSM,
+                    ),
+                    headerHeadlineStyle: const TextStyle(
+                      color: AppColors.textOnPrimary,
+                      fontSize: AppSizes.font2XL,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    weekdayStyle: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: AppSizes.fontXS,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    dayStyle: const TextStyle(
+                      color: AppColors.textColor,
+                      fontSize: AppSizes.fontMD,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    dayForegroundColor: WidgetStateProperty.resolveWith((
+                        states,
+                        ) {
+                      if (states.contains(WidgetState.selected) ||
+                          states.contains(WidgetState.hovered) ||
+                          states.contains(WidgetState.pressed)) {
+                        return AppColors.textOnPrimary;
+                      }
+                      if (states.contains(WidgetState.disabled)) {
+                        return AppColors.textSecondary;
+                      }
+                      return AppColors.textColor;
+                    }),
+                    dayBackgroundColor: WidgetStateProperty.resolveWith((
+                        states,
+                        ) {
+                      if (states.contains(WidgetState.selected) ||
+                          states.contains(WidgetState.hovered) ||
+                          states.contains(WidgetState.pressed)) {
+                        return AppColors.primaryColor;
+                      }
+                      return null;
+                    }),
+                    todayForegroundColor: WidgetStateProperty.resolveWith((
+                        states,
+                        ) {
+                      if (states.contains(WidgetState.selected) ||
+                          states.contains(WidgetState.hovered) ||
+                          states.contains(WidgetState.pressed)) {
+                        return AppColors.textOnPrimary;
+                      }
+                      return AppColors.primaryColor;
+                    }),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSizes.lg),
+                    ),
+                    cancelButtonStyle: TextButton.styleFrom(
+                      foregroundColor: AppColors.primaryColor,
+                    ),
+                    confirmButtonStyle: TextButton.styleFrom(
+                      foregroundColor: AppColors.primaryColor,
+                    ),
+                  ),
+                ),
+                child: child!,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Format date as dd-MM-yyyy
+  String _formatDate(DateTime d) {
+    return '${d.day.toString().padLeft(2, '0')}-''${d.month.toString().padLeft(2, '0')}-''${d.year}';
   }
 
   @override
