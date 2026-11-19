@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:transport_app/core/constants/app_colors.dart';
 import 'package:transport_app/feature/auth/screens/login.dart';
@@ -15,7 +14,6 @@ class WelcomePage extends StatefulWidget {
 }
 
 class WelcomeState extends State<WelcomePage> {
-
   // Default selected language
   String selectedLanguage = 'km';
 
@@ -29,7 +27,10 @@ class WelcomeState extends State<WelcomePage> {
   // Continue button
   void onContinue() {
     debugPrint('Selected language: $selectedLanguage');
-    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
   }
 
   @override
@@ -39,27 +40,23 @@ class WelcomeState extends State<WelcomePage> {
 
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSizes.peddingY, vertical: AppSizes.peddingX),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSizes.peddingY,
+            vertical: AppSizes.peddingX,
+          ),
           child: Column(
             children: [
-
               const SizedBox(height: 60),
 
               // App Logo
-              Image.asset(
-                'assets/icon/logoApp.png',
-                width: 130,
-                height: 130,
-              ),
+              Image.asset('assets/icon/logoApp.png', width: 130, height: 130),
 
               const SizedBox(height: 16),
 
               // Welcome Title
               Text(
                 'Welcome to CamRide',
-                style: AppTextStyles.heading2.copyWith(
-                  color: Colors.white,
-                ),
+                style: AppTextStyles.heading2.copyWith(color: Colors.white),
               ),
 
               const SizedBox(height: 12),
@@ -68,7 +65,7 @@ class WelcomeState extends State<WelcomePage> {
               Text(
                 'Please select your preferred language',
                 style: AppTextStyles.body.copyWith(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
 
@@ -104,11 +101,7 @@ class WelcomeState extends State<WelcomePage> {
 
                     child: Row(
                       children: [
-
-                        const Text(
-                          '🇰🇭',
-                          style: TextStyle(fontSize: 32),
-                        ),
+                        const Text('🇰🇭', style: TextStyle(fontSize: 32)),
 
                         const SizedBox(width: 16),
 
@@ -116,7 +109,6 @@ class WelcomeState extends State<WelcomePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
                               Text(
                                 'ភាសាខ្មែរ',
                                 style: AppTextStyles.heading3.copyWith(
@@ -179,11 +171,7 @@ class WelcomeState extends State<WelcomePage> {
 
                     child: Row(
                       children: [
-
-                        const Text(
-                          '🇬🇧',
-                          style: TextStyle(fontSize: 32),
-                        ),
+                        const Text('🇬🇧', style: TextStyle(fontSize: 32)),
 
                         const SizedBox(width: 16),
 
@@ -191,7 +179,6 @@ class WelcomeState extends State<WelcomePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
                               Text(
                                 'English',
                                 style: AppTextStyles.heading3.copyWith(
@@ -245,18 +232,11 @@ class WelcomeState extends State<WelcomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
-                      Text(
-                        'Continue',
-                        style: AppTextStyles.button,
-                      ),
+                      Text('Continue', style: AppTextStyles.button),
 
                       const SizedBox(width: 8),
 
-                      const Icon(
-                        Icons.arrow_forward,
-                        size: 24,
-                      ),
+                      const Icon(Icons.arrow_forward, size: 24),
                     ],
                   ),
                 ),

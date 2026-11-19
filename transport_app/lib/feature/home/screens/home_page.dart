@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:transport_app/core/constants/app_colors.dart';
-import 'package:transport_app/core/constants/pedding.dart';
+import 'package:transport_app/feature/select_car/screens/select_car.dart';
+
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_text_styles.dart';
 
@@ -21,7 +22,10 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: AppSizes.peddingY, vertical: AppSizes.peddingX),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSizes.peddingY,
+            vertical: AppSizes.peddingX,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -72,7 +76,7 @@ class _HomePageState extends State<HomePage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.notifications_none, color: Colors.white),
@@ -199,7 +203,9 @@ class _HomePageState extends State<HomePage> {
 
   // Format date as dd-MM-yyyy
   String _formatDate(DateTime d) {
-    return '${d.day.toString().padLeft(2, '0')}-''${d.month.toString().padLeft(2, '0')}-''${d.year}';
+    return '${d.day.toString().padLeft(2, '0')}-'
+        '${d.month.toString().padLeft(2, '0')}-'
+        '${d.year}';
   }
 
   Widget _buildSearchCard() {
@@ -368,14 +374,21 @@ class _HomePageState extends State<HomePage> {
               borderRadius: BorderRadius.circular(AppSizes.md),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
+                  color: Colors.black.withValues(alpha: 0.18),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TripListPage(),
+                  ),
+                );
+              },
               icon: const Icon(Icons.search, size: 22),
               label: Text('ស្វែងរក', style: AppTextStyles.button),
               style: ElevatedButton.styleFrom(

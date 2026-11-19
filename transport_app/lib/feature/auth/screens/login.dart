@@ -35,9 +35,7 @@ class _LoginPageState extends State<LoginPage> {
     debugPrint('Phone: $phone, Password: $password');
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const HomePage(),
-      ),
+      MaterialPageRoute(builder: (context) => const HomePage()),
     );
   }
 
@@ -70,9 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                 Center(
                   child: Text(
                     'ចូលប្រើប្រាស់',
-                    style: AppTextStyles.heading2.copyWith(
-                      color: Colors.white,
-                    ),
+                    style: AppTextStyles.heading2.copyWith(color: Colors.white),
                   ),
                 ),
 
@@ -108,8 +104,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide:
-                      const BorderSide(color: AppColors.primaryColor),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
                     ),
                   ),
                 ),
@@ -177,8 +174,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide:
-                      const BorderSide(color: AppColors.primaryColor),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryColor,
+                      ),
                     ),
                   ),
                 ),
@@ -240,7 +238,10 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     style: OutlinedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFFDADCE0), width: 1),
+                      side: const BorderSide(
+                        color: Color(0xFFDADCE0),
+                        width: 1,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
