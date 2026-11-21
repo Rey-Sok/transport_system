@@ -1,0 +1,420 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Passenger {
+  passengerId     Int       @id @default(autoincrement()) @map("passenger_id")
+  firstName       String    @map("first_name") @db.VarChar(50)
+  lastName        String    @map("last_name") @db.VarChar(50)
+  gender          String?   @db.VarChar(10)
+  nationality     String?   @db.VarChar(50)
+  email           String    @unique @db.Citext
+  passwordHash    String?   @map("password_hash") @db.VarChar(255)
+  phoneNumber     String?   @map("phone_number") @db.VarChar(20)
+  authProvider    String    @default("local") @map("auth_provider") @db.VarChar(20)
+  authProviderId  String?   @map("auth_provider_id") @db.VarChar(100)
+  profileImage    String?   @map("profile_image") @db.VarChar(255)
+  status          String    @default("active") @db.VarChar(10)
+  lastLoginAt     DateTime? @map("last_login_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  passwordTokens PasswordResetToken[]
+  refreshTokens  RefreshToken[]
+  deviceTokens   DeviceToken[]
+  heldTripSeats  TripSeat[] @relation("TripSeatHeldBy")
+  bookings       Booking[]
+  notifications  Notification[]
+  ratings        Rating[]
+
+  @@unique([authProvider, authProviderId])
+  @@map("passenger")
+}
+
+model Role {
+  roleId          Int              @id @default(autoincrement()) @map("role_id")
+  roleName        String           @unique @map("role_name") @db.VarChar(50)
+  description     String?          @db.VarChar(255)
+  staff           Staff[]
+  rolePermissions RolePermission[]
+
+  @@map("role")
+}
+
+model Permission {
+  permissionId    Int              @id @default(autoincrement()) @map("permission_id")
+  permissionName  String           @unique @map("permission_name") @db.VarChar(100)
+  module          String           @db.VarChar(50)
+  action          String           @db.VarChar(20)
+  rolePermissions RolePermission[]
+
+  @@unique([module, action])
+  @@map("permission")
+}
+
+model RolePermission {
+  roleId       Int        @map("role_id")
+  permissionId Int        @map("permission_id")
+  role         Role       @relation(fields: [roleId], references: [roleId], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [permissionId], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permission")
+}
+
+model Staff {
+  staffId        Int                  @id @default(autoincrement()) @map("staff_id")
+  roleId         Int                  @map("role_id")
+  firstName      String               @map("first_name") @db.VarChar(50)
+  lastName       String               @map("last_name") @db.VarChar(50)
+  email          String               @unique @db.Citext
+  passwordHash   String               @map("password_hash") @db.VarChar(255)
+  phoneNumber    String?              @map("phone_number") @db.VarChar(20)
+  status         String               @default("active") @db.VarChar(10)
+  lastLoginAt    DateTime?            @map("last_login_at") @db.Timestamptz(6)
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  role           Role                 @relation(fields: [roleId], references: [roleId])
+  driver         Driver?
+  passwordTokens PasswordResetToken[]
+  refreshTokens  RefreshToken[]
+  bookings       Booking[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+
+  @@index([roleId], map: "idx_staff_role")
+  @@map("staff")
+}
+
+model Driver {
+  staffId       Int      @id @map("staff_id")
+  licenseNumber String   @unique @map("license_number") @db.VarChar(50)
+  licenseExpiry DateTime @map("license_expiry") @db.Date
+  status        String   @default("available") @db.VarChar(15)
+  ratingAvg     Decimal? @map("rating_avg") @db.Decimal(3, 2)
+  staff         Staff    @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
+  trips         Trip[]
+
+  @@map("driver")
+}
+
+model PasswordResetToken {
+  tokenId     BigInt     @id @default(autoincrement()) @map("token_id")
+  passengerId Int?       @map("passenger_id")
+  staffId     Int?       @map("staff_id")
+  tokenHash   String     @unique @map("token_hash") @db.VarChar(255)
+  expiresAt   DateTime   @map("expires_at") @db.Timestamptz(6)
+  usedAt      DateTime?  @map("used_at") @db.Timestamptz(6)
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  passenger   Passenger? @relation(fields: [passengerId], references: [passengerId], onDelete: Cascade)
+  staff       Staff?     @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
+
+  @@map("password_reset_token")
+}
+
+model RefreshToken {
+  tokenId     BigInt     @id @default(autoincrement()) @map("token_id")
+  passengerId Int?       @map("passenger_id")
+  staffId     Int?       @map("staff_id")
+  tokenHash   String     @unique @map("token_hash") @db.VarChar(255)
+  expiresAt   DateTime   @map("expires_at") @db.Timestamptz(6)
+  revokedAt   DateTime?  @map("revoked_at") @db.Timestamptz(6)
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  passenger   Passenger? @relation(fields: [passengerId], references: [passengerId], onDelete: Cascade)
+  staff       Staff?     @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
+
+  @@map("refresh_token")
+}
+
+model DeviceToken {
+  deviceTokenId Int       @id @default(autoincrement()) @map("device_token_id")
+  passengerId   Int       @map("passenger_id")
+  token         String    @unique @db.VarChar(255)
+  platform      String    @db.VarChar(10)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  passenger     Passenger @relation(fields: [passengerId], references: [passengerId], onDelete: Cascade)
+
+  @@map("device_token")
+}
+
+model VehicleType {
+  vehicleTypeId Int       @id @default(autoincrement()) @map("vehicle_type_id")
+  typeName      String    @unique @map("type_name") @db.VarChar(50)
+  description   String?   @db.VarChar(255)
+  vehicles      Vehicle[]
+
+  @@map("vehicle_type")
+}
+
+model Vehicle {
+  vehicleId     Int         @id @default(autoincrement()) @map("vehicle_id")
+  vehicleTypeId Int         @map("vehicle_type_id")
+  licensePlate  String      @unique @map("license_plate") @db.VarChar(20)
+  vehicleClass  String      @default("normal") @map("vehicle_class") @db.VarChar(10)
+  seatCapacity  Int         @map("seat_capacity")
+  facilities    Json        @default("[]") @db.JsonB
+  image         String?     @db.VarChar(255)
+  status        String      @default("available") @db.VarChar(15)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  vehicleType   VehicleType @relation(fields: [vehicleTypeId], references: [vehicleTypeId])
+  seats         Seat[]
+  trips         Trip[]
+
+  @@index([vehicleTypeId], map: "idx_vehicle_type")
+  @@map("vehicle")
+}
+
+model Seat {
+  seatId     Int        @id @default(autoincrement()) @map("seat_id")
+  vehicleId  Int        @map("vehicle_id")
+  seatNumber String     @map("seat_number") @db.VarChar(10)
+  seatRow    Int        @map("seat_row")
+  seatColumn Int        @map("seat_column")
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [vehicleId], onDelete: Cascade)
+  tripSeats  TripSeat[]
+
+  @@unique([vehicleId, seatNumber])
+  @@unique([vehicleId, seatRow, seatColumn])
+  @@map("seat")
+}
+
+model Location {
+  locationId   Int      @id @default(autoincrement()) @map("location_id")
+  name         String   @unique @db.VarChar(100)
+  nameKm       String?  @map("name_km") @db.VarChar(100)
+  latitude     Decimal? @db.Decimal(10, 7)
+  longitude    Decimal? @db.Decimal(10, 7)
+  origins      Route[]  @relation("RouteOrigin")
+  destinations Route[]  @relation("RouteDestination")
+
+  @@map("location")
+}
+
+model Route {
+  routeId           Int                   @id @default(autoincrement()) @map("route_id")
+  originId          Int                   @map("origin_id")
+  destinationId     Int                   @map("destination_id")
+  distanceKm        Decimal               @map("distance_km") @db.Decimal(7, 2)
+  estimatedDuration Unsupported("interval") @map("estimated_duration")
+  status            String                @default("active") @db.VarChar(10)
+  origin            Location              @relation("RouteOrigin", fields: [originId], references: [locationId])
+  destination       Location              @relation("RouteDestination", fields: [destinationId], references: [locationId])
+  stops             RouteStop[]
+  trips             Trip[]
+
+  @@unique([originId, destinationId])
+  @@map("route")
+}
+
+model RouteStop {
+  stopId        Int                   @id @default(autoincrement()) @map("stop_id")
+  routeId       Int                   @map("route_id")
+  stopName      String                @map("stop_name") @db.VarChar(100)
+  stopOrder     Int                   @map("stop_order")
+  arrivalOffset Unsupported("interval") @default(dbgenerated("'0'::interval")) @map("arrival_offset")
+  address       String?               @db.VarChar(255)
+  latitude      Decimal?              @db.Decimal(10, 7)
+  longitude     Decimal?              @db.Decimal(10, 7)
+  googlePlaceId String?               @map("google_place_id") @db.VarChar(150)
+  route         Route                 @relation(fields: [routeId], references: [routeId], onDelete: Cascade)
+  boardings     Booking[]             @relation("BookingBoardingStop")
+  dropoffs      Booking[]             @relation("BookingDropoffStop")
+
+  @@unique([routeId, stopOrder])
+  @@map("route_stop")
+}
+
+model Trip {
+  tripId            Int        @id @default(autoincrement()) @map("trip_id")
+  routeId           Int        @map("route_id")
+  vehicleId         Int        @map("vehicle_id")
+  driverId          Int        @map("driver_id")
+  departureDatetime DateTime   @map("departure_datetime") @db.Timestamptz(6)
+  arrivalDatetime   DateTime   @map("arrival_datetime") @db.Timestamptz(6)
+  ticketPrice       Decimal    @map("ticket_price") @db.Decimal(10, 2)
+  discountPercent   Decimal    @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  finalPrice        Decimal    @default(dbgenerated()) @map("final_price") @db.Decimal(10, 2)
+  status            String     @default("scheduled") @db.VarChar(15)
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  route             Route      @relation(fields: [routeId], references: [routeId])
+  vehicle           Vehicle    @relation(fields: [vehicleId], references: [vehicleId])
+  driver            Driver     @relation(fields: [driverId], references: [staffId])
+  tripSeats         TripSeat[]
+  bookings          Booking[]
+  notifications     Notification[]
+
+  @@index([routeId, departureDatetime], map: "idx_trip_search")
+  @@index([driverId], map: "idx_trip_driver")
+  @@index([vehicleId], map: "idx_trip_vehicle")
+  @@map("trip")
+}
+
+model TripSeat {
+  tripSeatId        Int          @id @default(autoincrement()) @map("trip_seat_id")
+  tripId            Int          @map("trip_id")
+  seatId            Int          @map("seat_id")
+  status            String       @default("available") @db.VarChar(10)
+  heldByPassengerId Int?         @map("held_by_passenger_id")
+  holdExpiresAt     DateTime?    @map("hold_expires_at") @db.Timestamptz(6)
+  trip              Trip         @relation(fields: [tripId], references: [tripId], onDelete: Cascade)
+  seat              Seat         @relation(fields: [seatId], references: [seatId])
+  heldByPassenger   Passenger?   @relation("TripSeatHeldBy", fields: [heldByPassengerId], references: [passengerId], onDelete: SetNull)
+  bookingSeats      BookingSeat[]
+
+  @@unique([tripId, seatId])
+  @@index([tripId, status], map: "idx_trip_seat_status")
+  @@map("trip_seat")
+}
+
+model Booking {
+  bookingId      Int        @id @default(autoincrement()) @map("booking_id")
+  passengerId    Int?       @map("passenger_id")
+  staffId        Int?       @map("staff_id")
+  tripId         Int        @map("trip_id")
+  boardingStopId Int?       @map("boarding_stop_id")
+  dropoffStopId  Int?       @map("dropoff_stop_id")
+  passengerName  String?    @map("passenger_name") @db.VarChar(100)
+  passengerPhone String?    @map("passenger_phone") @db.VarChar(20)
+  bookingCode    String     @unique @map("booking_code") @db.VarChar(20)
+  qrCode         String?    @map("qr_code") @db.VarChar(255)
+  totalAmount    Decimal    @map("total_amount") @db.Decimal(10, 2)
+  bookingStatus  String     @default("pending") @map("booking_status") @db.VarChar(15)
+  bookingDate    DateTime   @default(now()) @map("booking_date") @db.Timestamptz(6)
+  expiresAt      DateTime?  @map("expires_at") @db.Timestamptz(6)
+  cancelledAt    DateTime?  @map("cancelled_at") @db.Timestamptz(6)
+  cancelReason   String?    @map("cancel_reason") @db.VarChar(255)
+  passenger      Passenger? @relation(fields: [passengerId], references: [passengerId])
+  staff          Staff?     @relation(fields: [staffId], references: [staffId])
+  trip           Trip       @relation(fields: [tripId], references: [tripId])
+  boardingStop   RouteStop? @relation("BookingBoardingStop", fields: [boardingStopId], references: [stopId])
+  dropoffStop    RouteStop? @relation("BookingDropoffStop", fields: [dropoffStopId], references: [stopId])
+  seats          BookingSeat[]
+  payments       Payment[]
+  rating         Rating?
+  notifications  Notification[]
+
+  @@index([passengerId], map: "idx_booking_passenger")
+  @@index([tripId], map: "idx_booking_trip")
+  @@index([bookingStatus], map: "idx_booking_status")
+  @@map("booking")
+}
+
+model BookingSeat {
+  bookingSeatId Int      @id @default(autoincrement()) @map("booking_seat_id")
+  bookingId     Int      @map("booking_id")
+  tripSeatId    Int      @map("trip_seat_id")
+  price         Decimal  @db.Decimal(10, 2)
+  isActive      Boolean  @default(true) @map("is_active")
+  booking       Booking  @relation(fields: [bookingId], references: [bookingId], onDelete: Cascade)
+  tripSeat      TripSeat @relation(fields: [tripSeatId], references: [tripSeatId])
+
+  @@index([bookingId], map: "idx_booking_seat_booking")
+  @@map("booking_seat")
+}
+
+model PaymentMethod {
+  paymentMethodId Int       @id @default(autoincrement()) @map("payment_method_id")
+  code            String    @unique @db.VarChar(30)
+  name            String    @db.VarChar(50)
+  isActive        Boolean   @default(true) @map("is_active")
+  payments        Payment[]
+
+  @@map("payment_method")
+}
+
+model Payment {
+  paymentId       Int           @id @default(autoincrement()) @map("payment_id")
+  bookingId       Int           @map("booking_id")
+  paymentMethodId Int           @map("payment_method_id")
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD") @db.Char(3)
+  paymentStatus   String        @default("pending") @map("payment_status") @db.VarChar(20)
+  transactionRef  String?       @unique @map("transaction_ref") @db.VarChar(100)
+  paidAt          DateTime?     @map("paid_at") @db.Timestamptz(6)
+  refundAmount    Decimal       @default(0) @map("refund_amount") @db.Decimal(10, 2)
+  refundedAt      DateTime?     @map("refunded_at") @db.Timestamptz(6)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  booking         Booking       @relation(fields: [bookingId], references: [bookingId])
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [paymentMethodId])
+  invoice         Invoice?
+
+  @@index([bookingId], map: "idx_payment_booking")
+  @@index([paymentStatus], map: "idx_payment_status")
+  @@map("payment")
+}
+
+model Invoice {
+  invoiceId     Int      @id @default(autoincrement()) @map("invoice_id")
+  paymentId     Int      @unique @map("payment_id")
+  invoiceNumber String   @unique @map("invoice_number") @db.VarChar(30)
+  issuedDate    DateTime @default(now()) @map("issued_date") @db.Timestamptz(6)
+  invoiceFile   String?  @map("invoice_file") @db.VarChar(255)
+  payment       Payment  @relation(fields: [paymentId], references: [paymentId])
+
+  @@map("invoice")
+}
+
+model NotificationTemplate {
+  templateId      Int            @id @default(autoincrement()) @map("template_id")
+  name            String         @db.VarChar(100)
+  type            String         @unique @db.VarChar(30)
+  contentTemplate String         @map("content_template")
+  notifications   Notification[]
+
+  @@map("notification_template")
+}
+
+model Notification {
+  notificationId Int                   @id @default(autoincrement()) @map("notification_id")
+  templateId     Int?                  @map("template_id")
+  passengerId    Int?                  @map("passenger_id")
+  staffId        Int?                  @map("staff_id")
+  bookingId      Int?                  @map("booking_id")
+  tripId         Int?                  @map("trip_id")
+  title          String                @db.VarChar(150)
+  message        String
+  isRead         Boolean               @default(false) @map("is_read")
+  sentAt         DateTime              @default(now()) @map("sent_at") @db.Timestamptz(6)
+  template       NotificationTemplate? @relation(fields: [templateId], references: [templateId], onDelete: NoAction)
+  passenger      Passenger?            @relation(fields: [passengerId], references: [passengerId], onDelete: Cascade)
+  staff          Staff?                @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
+  booking        Booking?              @relation(fields: [bookingId], references: [bookingId], onDelete: SetNull)
+  trip           Trip?                 @relation(fields: [tripId], references: [tripId], onDelete: SetNull)
+
+  @@index([passengerId, isRead], map: "idx_notification_passenger")
+  @@index([staffId, isRead], map: "idx_notification_staff")
+  @@map("notification")
+}
+
+model Rating {
+  ratingId      Int       @id @default(autoincrement()) @map("rating_id")
+  bookingId     Int       @unique @map("booking_id")
+  passengerId   Int       @map("passenger_id")
+  vehicleRating Int       @map("vehicle_rating") @db.SmallInt
+  driverRating  Int       @map("driver_rating") @db.SmallInt
+  serviceRating Int       @map("service_rating") @db.SmallInt
+  comment       String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  booking       Booking   @relation(fields: [bookingId], references: [bookingId])
+  passenger     Passenger @relation(fields: [passengerId], references: [passengerId])
+
+  @@map("rating")
+}
+
+model AuditLog {
+  auditId   BigInt   @id @default(autoincrement()) @map("audit_id")
+  staffId   Int?     @map("staff_id")
+  action    String   @db.VarChar(50)
+  entity    String   @db.VarChar(50)
+  entityId  String?  @map("entity_id") @db.VarChar(50)
+  details   Json?    @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  staff     Staff?   @relation(fields: [staffId], references: [staffId], onDelete: SetNull)
+
+  @@index([entity, entityId], map: "idx_audit_entity")
+  @@map("audit_log")
+}
